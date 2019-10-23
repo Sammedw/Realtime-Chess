@@ -1,5 +1,6 @@
 
+const module = require("./module");
 
 console.log(module);
-console.log("test");
-//comment
+
+module.print("A message");

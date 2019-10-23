@@ -1,0 +1,19 @@
+{
+  "name": "chessnea",
+  "version": "1.0.0",
+  "description": "Online Chess Game",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sammedw/ChessNEA.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sammedw/ChessNEA/issues"
+  },
+  "homepage": "https://github.com/Sammedw/ChessNEA#readme"
+}
