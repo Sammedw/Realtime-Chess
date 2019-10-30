@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Public"
   ],
-  "SelectedNode": "\\app.js",
+  "SelectedNode": "\\Public\\chat.js",
   "PreviewInSolutionExplorer": false
 }
