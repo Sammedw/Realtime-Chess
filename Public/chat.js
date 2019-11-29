@@ -1,5 +1,5 @@
 //Make Connection
-const socket = io.connect("http://192.168.0.67:4000");
+const socket = io.connect("http://192.168.219.96:4000");
 
 //Query DOM
 var message = document.getElementById("message"),
