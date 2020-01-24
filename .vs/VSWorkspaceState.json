@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Public"
+    "\\Prototypes",
+    "\\Prototypes\\Public",
+    "\\Static"
   ],
-  "SelectedNode": "\\Public\\chat.js",
+  "SelectedNode": "\\server.js",
   "PreviewInSolutionExplorer": false
 }
