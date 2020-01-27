@@ -29,17 +29,26 @@ const listener = socket(server);
 app.get("/game/:gameID", function (req, res) {
     //Get gameID from url
     var urlGameID = req.params["gameID"];
+    console.log(urlGameID);
     //Check that the game currently exists
-    if (gameManager.doesGameExist(urlGameID) {
+    if (gameManager.doesGameExist(urlGameID.toString())) {
         //If it exists, render the game page
+        console.log("true");
         res.render("gamepage");
+    } else {
+        //Game doesn't exist redirect user back
+        console.log("false");
+        res.redirect("/");
     }
 });
 
 
+connectedUsers = {};
+
 //Listen for connections
 listener.on("connection", function(socket) {
     console.log("Connection", socket.id);
+    connectedUsers[socket.id] = socket;
 
     //listen for clients trying to find a game
     socket.on("findGame", function () {
@@ -49,10 +58,22 @@ listener.on("connection", function(socket) {
         var gameID = gameManager.createNewGame();
         if (gameID) {
             console.log("Success!", gameID);
-            //Add users to a socket room
-            console.log(gameManager.getGamePlayers(gameID));
+            //Get players from game object
+            var players = (gameManager.getGamePlayers(gameID));
+            connectedUsers[players["white"]].join(gameID);
+            connectedUsers[players["black"]].join(gameID);
+            console.log(connectedUsers[players["black"]].rooms);
+            //Emit an event to users to let them know they can redirect to the game page
+            listener.to(gameID).emit("gameCreated", gameID);
         } else {
             console.log("No Game!");
         }
     });
+
 });
+
+
+//Page couldn't be found middleware
+app.use(function (req, res, next) {
+    res.status(404).send("Sorry can't find that!")
+})

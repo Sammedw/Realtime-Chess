@@ -3,8 +3,9 @@
     "",
     "\\Prototypes",
     "\\Prototypes\\Public",
-    "\\static"
+    "\\static",
+    "\\views"
   ],
-  "SelectedNode": "\\server.js",
+  "SelectedNode": "\\gamemanager.js",
   "PreviewInSolutionExplorer": false
 }

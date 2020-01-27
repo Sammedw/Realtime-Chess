@@ -48,18 +48,25 @@ class GameManager {
 
     //Returns true if a given gameID exists
     doesGameExist(gameID) {
-        if (Object.keys(this.games).includes(gameID)) {
-            return True;
+        if (Object.keys(this.games).includes(gameID.toString())) {
+            return true;
         } else {
-            return False;
+            return false;
         }
     }
 
     //Get the player IDs given a game ID, else return false
     getGamePlayers(gameID) {
         //Check if the game exists
-        let extractPlayers = ({ white, black }) => ({ white, black });
-        return extractPlayers(this.games[gameID]);
+        if (this.doesGameExist(gameID)) {
+            //Create a function that returns only the white and black attributes of a game object
+            let extractPlayers = ({ white, black }) => ({ white, black });
+            //Return the player IDs
+            return extractPlayers(this.games[gameID]);
+        } else {
+            //Game doesn't exist
+            return false;
+        }
     }
 
 }
