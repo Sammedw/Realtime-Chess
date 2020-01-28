@@ -32,12 +32,15 @@ app.get("/game/:gameID", function (req, res) {
     console.log(urlGameID);
     //Check that the game currently exists
     if (gameManager.doesGameExist(urlGameID.toString())) {
-        //If it exists, render the game page
-        console.log("true");
-        res.render("gamepage");
+        //If it exists, check that the user is a valid member of the game
+        //Get player IDs
+        var playerIDs = Object.values(gameMamager.getGamePlayers(urlGameID));
+        //Ch
+        if (playerIDs) {
+            res.render("gamepage");
+        }
     } else {
         //Game doesn't exist redirect user back
-        console.log("false");
         res.redirect("/");
     }
 });
@@ -48,6 +51,8 @@ connectedUsers = {};
 //Listen for connections
 listener.on("connection", function(socket) {
     console.log("Connection", socket.id);
+    console.log(socket.handshake.query.id);
+    //Add new user to connected users
     connectedUsers[socket.id] = socket;
 
     //listen for clients trying to find a game
@@ -60,9 +65,9 @@ listener.on("connection", function(socket) {
             console.log("Success!", gameID);
             //Get players from game object
             var players = (gameManager.getGamePlayers(gameID));
+            //Join the players to the socket room
             connectedUsers[players["white"]].join(gameID);
             connectedUsers[players["black"]].join(gameID);
-            console.log(connectedUsers[players["black"]].rooms);
             //Emit an event to users to let them know they can redirect to the game page
             listener.to(gameID).emit("gameCreated", gameID);
         } else {

@@ -13,11 +13,8 @@ findGameBtn.addEventListener("click", function() {
 
 //Listen for socket events
 socket.on("gameCreated", (gameID) => {
-    console.log("mssage recieved")
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', "game/"+gameID, true);
-    xhr.send();
-    console.log(xhr.responseText);
+    //redirect user to the new game page
+    window.location = "/game/" + gameID;
    
 });
 
