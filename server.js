@@ -26,18 +26,26 @@ const listener = socket(server);
 
 
 //GET request for game page
-app.get("/game/:gameID", function (req, res) {
+app.get("/game/:gameID/:socketID", function (req, res) {
     //Get gameID from url
     var urlGameID = req.params["gameID"];
+    //get socketID from url
+    var urlSocketID = req.params["socketID"];
     console.log(urlGameID);
+    console.log(urlSocketID);
     //Check that the game currently exists
     if (gameManager.doesGameExist(urlGameID.toString())) {
         //If it exists, check that the user is a valid member of the game
         //Get player IDs
-        var playerIDs = Object.values(gameMamager.getGamePlayers(urlGameID));
-        //Ch
-        if (playerIDs) {
+        var playerIDs = Object.values(gameManager.getGamePlayers(urlGameID));
+        //Check if they are players in the game
+        if (Object.values(playerIDs).includes(urlSocketID)) {
+            //Send user to game page
             res.render("gamepage");
+        } else {
+            //They are not part of the game, redirect user to home
+            //Game doesn't exist redirect user back
+            res.redirect("/");
         }
     } else {
         //Game doesn't exist redirect user back
@@ -51,7 +59,6 @@ connectedUsers = {};
 //Listen for connections
 listener.on("connection", function(socket) {
     console.log("Connection", socket.id);
-    console.log(socket.handshake.query.id);
     //Add new user to connected users
     connectedUsers[socket.id] = socket;
 
