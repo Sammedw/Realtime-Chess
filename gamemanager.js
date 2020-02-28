@@ -27,7 +27,8 @@ class GameManager {
         }
     }
 
-    //Attempts to create new game using players in queue, returns the game ID or False if there are not enough players in queue
+    //Attempts to create new game using players in queue, returns the game ID or False if there are not
+    //enough players in queue
     createNewGame() {
         if (this.queue.length >= 2) {
             //gameID is the number of current games +1 - Can be replaced later with better ID generation

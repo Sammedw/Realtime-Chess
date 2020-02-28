@@ -1,0 +1,32 @@
+#homeBar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #333;
+    overflow: hidden;
+}
+
+li {
+    float: right;
+}
+
+.homeBarElement {
+    display: block; /*Makes whole area of link clickable*/
+    padding: 25px 35px;
+    text-decoration: none; /*No underlining*/
+    color: white;
+    font-family: "Arial", Helvetica, sans-serif;
+}
+
+.homeBarElement:hover {
+        background-color: #111;
+}
+
+#title {
+    display: block; /*Makes whole area of link clickable*/
+    font-family: "Arial", Helvetica, sans-serif;
+    text-decoration: none; /*No underlining*/
+    color: white;
+    padding: 20px 450px;
+    font-size: 20px;
+}

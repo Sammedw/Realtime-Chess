@@ -24,6 +24,10 @@ const server = app.listen(4000, function () {
 //Socket setup
 const listener = socket(server);
 
+//GET request for home page
+app.get("/", function (req, res) {
+    res.render("home");
+});
 
 //GET request for game page
 app.get("/game/:gameID/:socketID", function (req, res) {

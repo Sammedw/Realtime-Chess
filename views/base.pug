@@ -1,0 +1,19 @@
+html
+	head
+		title= RTChess
+		script(src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js")
+		link(rel="stylesheet", href="styles.css")
+body
+	ul(id="homeBar")
+		li
+			a(href="http://google.com", class="homeBarElement") Log In
+		li
+			a(href="http://google.com", class="homeBarElement") Sign Up
+		li
+			a(href="/", id="title") RTChess
+
+
+	block page
+
+	script(src="/client.js")
+
