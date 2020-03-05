@@ -59,3 +59,18 @@ li {
         position: relative;
         top: 5px;
     }
+
+
+/*Game Styles*/
+
+#board {
+    position: absolute;
+    left: 20%;
+}
+
+.black-3c85d {
+    background: linear-gradient(to top, yellow 50%, #b58863 50%);
+    background-size: 100% 200%;
+    background-position: left top;
+    transition: background-position 5s linear;
+}
