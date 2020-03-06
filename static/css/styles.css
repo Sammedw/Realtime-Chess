@@ -72,5 +72,4 @@ li {
     background: linear-gradient(to top, yellow 50%, #b58863 50%);
     background-size: 100% 200%;
     background-position: left top;
-    transition: background-position 5s linear;
 }

@@ -48,7 +48,6 @@ app.get("/game/:gameID/:socketID", function (req, res) {
             res.render("gamepage");
         } else {
             //They are not part of the game, redirect user to home
-            //Game doesn't exist redirect user back
             res.redirect("/");
         }
     } else {
