@@ -1,5 +1,9 @@
 //Create new board object
-var board = Chessboard("board", "start");
+var config = {
+    draggable: true,
+    position: 'start'
+}
+var board = Chessboard("board", config);
 
 //get button on the page
 var cooldownBtn = document.getElementById("cooldown");
