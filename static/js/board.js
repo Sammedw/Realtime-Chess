@@ -1,4 +1,7 @@
 
+//import socket connection
+import { socket } from "./connection.js";
+
 //Create new board object
 var config = {
     draggable: true,

@@ -4,6 +4,8 @@
 const express = require("express");
 const GameManager = require("./gamemanager");
 const socket = require("socket.io");
+const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 
 
 //Create instance of express class
@@ -12,6 +14,8 @@ const app = express();
 app.use(express.static("static"));
 //Set pug as the template engine
 app.set("view engine", "pug");
+//Use cookie parser
+app.use(cookieParser());
 
 //Create instance of Game Manager
 const gameManager = new GameManager();
@@ -23,6 +27,24 @@ const server = app.listen(4000, function () {
 
 //Socket setup
 const listener = socket(server);
+
+
+//GET request middlware - create session if user has no session
+function establishSession (req, res, next) {
+    if (req.method == "GET") {
+        res.clearCookie("sessionID");
+        if (req.cookies["sessionID"] == null) {
+            var sessionID = crypto.randomBytes(20).toString('hex');
+            console.log("New session: " + sessionID)
+            res.cookie('sessionID', sessionID, {maxAge: 10 * 60 * 60 * 1000});
+        } else {
+            console.log("Existing connection");
+        }
+    }
+    next();
+}
+
+app.use(establishSession)   
 
 //GET request for home page
 app.get("/", function (req, res) {

@@ -1,8 +1,9 @@
 extends base.pug
 
+block scripts
+    script(type="module", src="/js/home.js")
+
 block page
     h1= "Home page"
     button(id="findGameButton")= "Find Game"
-    script(type="module", src="/js/connection.js")
-    script(type="module", src="/js/client.js")
-    //comment
+

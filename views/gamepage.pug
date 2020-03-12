@@ -1,5 +1,8 @@
 extends base.pug
 
+block scripts
+    script(type="module", src="/js/board.js")
+
 block page
     //Load chessboard files and jquery dependancy
     link(rel="stylesheet", href="/chessboardjs-1.0.0/css/chessboard-1.0.0.min.css")
@@ -9,4 +12,4 @@ block page
 
     button(id="cooldown")= "cooldown"
     div(id="board", style="width: 600px")
-    script(src="/js/board.js")
+    
