@@ -1,6 +1,8 @@
 //Make Connection
 //192.168.0.67
-const socket = io.connect("http://192.168.0.67:4000");
+//const socket = io.connect("http://192.168.219.96:4000");
+import { socket } from "./connection.js";
+console.log(socket.id);
 
 
 var findGameBtn = document.getElementById("findGameButton");
