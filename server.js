@@ -32,7 +32,6 @@ const listener = socket(server);
 //GET request middlware - create session if user has no session
 function establishSession (req, res, next) {
     if (req.method == "GET") {
-        res.clearCookie("sessionID");
         if (req.cookies["sessionID"] == null) {
             var sessionID = crypto.randomBytes(20).toString('hex');
             console.log("New session: " + sessionID)
@@ -52,20 +51,20 @@ app.get("/", function (req, res) {
 });
 
 //GET request for game page
-app.get("/game/:gameID/:socketID", function (req, res) {
+app.get("/game/:gameID/:sessionID", function (req, res) {
     //Get gameID from url
     var urlGameID = req.params["gameID"];
     //get socketID from url
-    var urlSocketID = req.params["socketID"];
+    var urlSessionID = req.params["sessionID"];
     console.log(urlGameID);
-    console.log(urlSocketID);
+    console.log(urlSessionID);
     //Check that the game currently exists
     if (gameManager.doesGameExist(urlGameID.toString())) {
         //If it exists, check that the user is a valid member of the game
         //Get player IDs
         var playerIDs = Object.values(gameManager.getGamePlayers(urlGameID));
         //Check if they are players in the game
-        if (Object.values(playerIDs).includes(urlSocketID)) {
+        if (Object.values(playerIDs).includes(urlSessionID)) {
             //Send user to game page
             res.render("gamepage");
         } else {
@@ -84,24 +83,28 @@ connectedUsers = {};
 //Listen for connections
 listener.on("connection", function(socket) {
     console.log("Connection", socket.id);
-    //Add new user to connected users
-    connectedUsers[socket.id] = socket;
+
+    //Listens for sessionID being sent from client
+    socket.on("sendSession", function(data) {
+        console.log("User has Session ID " + data.sessionID);
+        //Map sessionID to socketID in connected users
+        connectedUsers[data.sessionID] = socket.id;
+    });
 
     //listen for clients trying to find a game
-    socket.on("findGame", function () {
+    socket.on("findGame", function (data) {
         //Add player to queue
-        gameManager.addPlayerToQueue(socket.id);
+        gameManager.addPlayerToQueue(data.sessionID);
         //Attempt to create game
         var gameID = gameManager.createNewGame();
+        //if gameID is false then no game was created
         if (gameID) {
             console.log("Success!", gameID);
             //Get players from game object
             var players = (gameManager.getGamePlayers(gameID));
-            //Join the players to the socket room
-            connectedUsers[players["white"]].join(gameID);
-            connectedUsers[players["black"]].join(gameID);
             //Emit an event to users to let them know they can redirect to the game page
-            listener.to(gameID).emit("gameCreated", gameID);
+            gameManager.emitEventToPlayers(gameID, listener, "gameCreated", gameID);
+
         } else {
             console.log("No Game!");
         }

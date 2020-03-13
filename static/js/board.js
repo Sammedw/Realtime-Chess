@@ -1,6 +1,6 @@
 
 //import socket connection
-import { socket } from "./connection.js";
+import { socket, sessionID } from "./connection.js";
 
 //Create new board object
 var config = {

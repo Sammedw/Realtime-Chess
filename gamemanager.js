@@ -70,6 +70,15 @@ class GameManager {
         }
     }
 
+    //Emits a socketIO message to players of a given game
+    emitEventToPlayers(gameID, socket, event, data) {
+        //Loop through players in a given game
+        Object.values(this.getGamePlayers(gameID)).forEach(function(player) {
+            console.log("Event sent to " + player + " at " + connectedUsers[player]);
+            socket.to(connectedUsers[player]).emit(event, data);
+        });
+    }
+
 }
 
 //Export the GameManager Class
