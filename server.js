@@ -110,6 +110,11 @@ listener.on("connection", function(socket) {
         }
     });
 
+    //listen for clients trying to make moves
+    socket.on("startMove", function(data) {
+        console.log(data.source, data.piece, data.target);
+    });
+
 });
 
 

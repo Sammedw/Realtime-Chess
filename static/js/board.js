@@ -5,7 +5,8 @@ import { socket, sessionID } from "./connection.js";
 //Create new board object
 var config = {
     draggable: true,
-    position: 'start'
+    position: "start",
+    onDrop: onDrop
 }
 
 //Define cooldown time
@@ -33,8 +34,14 @@ function displayCooldown(square, cooldown) {
         squareDiv.style.transition = "background-position 0s linear";
         squareDiv.style.backgroundPosition = "left top";
     }, cooldown * 1000);
-
 }
+
+//Events
+function onDrop(source, target, piece) {
+    //emit message to server
+    socket.emit("startMove", {source: source, target: target, piece: piece});
+}
+
 //Listener for button click
 cooldownBtn.addEventListener("click", function () {
     displayCooldown("e4", cooldown);
