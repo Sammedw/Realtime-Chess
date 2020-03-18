@@ -12,7 +12,16 @@ class RealTimeChess {
     }
 
     startMove(source, piece, target) {
+        //get piece type that was moved
+        var pieceType = piece.charAt(1);
         //check if piece is king 
+        if (pieceType == "K") {
+            console.log("King");
+            return true;
+        }
     }
 
 }
+
+//Export the GameManager Class
+module.exports = RealTimeChess;

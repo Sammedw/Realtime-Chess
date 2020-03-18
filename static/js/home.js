@@ -3,7 +3,6 @@
 //const socket = io.connect("http://192.168.219.96:4000");
 import { socket, sessionID } from "./connection.js";
 
-
 var findGameBtn = document.getElementById("findGameButton");
 
 
@@ -14,9 +13,8 @@ findGameBtn.addEventListener("click", function() {
 
 
 //Listen for socket events
-socket.on("gameCreated", (gameID) => {
+socket.on("gameCreated", (data) => {
     //redirect user to the new game page
-    window.location = "/game/" + gameID + "/" + sessionID;
- 
+    window.location = "/game/" + data.gameID + "/" + data.side + "/" + sessionID ;
 });
 

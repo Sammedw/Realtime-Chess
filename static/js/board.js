@@ -2,10 +2,24 @@
 //import socket connection
 import { socket, sessionID } from "./connection.js";
 
+function extractGameInfoFromURL() {
+    //get URL of page
+    var URL = window.location["href"];
+    //locate 2nd and 3rd slash of URL where the side is stored
+    var firstSlash = URL.indexOf("game") + 4;
+    var secondSlash = URL.indexOf("/", firstSlash+1);
+    var thirdSlash = URL.indexOf("/", secondSlash+1);
+    //extract the side and game id using the indicies of the slashes 
+    var gameID = URL.substring(firstSlash+1, secondSlash)
+    var side = URL.substring(secondSlash+1, thirdSlash);
+    return {side: side, gameID: gameID};
+}
+
 //Create new board object
 var config = {
     draggable: true,
     position: "start",
+    orientation: extractGameInfoFromURL().side,
     onDrop: onDrop
 }
 
@@ -37,9 +51,9 @@ function displayCooldown(square, cooldown) {
 }
 
 //Events
-function onDrop(source, target, piece) {
+function onDrop(source, target, piece, newPos, oldPos, orientation) {
     //emit message to server
-    socket.emit("startMove", {source: source, target: target, piece: piece});
+    socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, source: source, target: target, piece: piece, side: orientation});
 }
 
 //Listener for button click

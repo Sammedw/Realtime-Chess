@@ -51,20 +51,24 @@ app.get("/", function (req, res) {
 });
 
 //GET request for game page
-app.get("/game/:gameID/:sessionID", function (req, res) {
+app.get("/game/:gameID/:side/:sessionID", function (req, res) {
     //Get gameID from url
     var urlGameID = req.params["gameID"];
+    //Get side from url
+    var urlSide = req.params["side"];
     //get socketID from url
     var urlSessionID = req.params["sessionID"];
     console.log(urlGameID);
     console.log(urlSessionID);
     //Check that the game currently exists
     if (gameManager.doesGameExist(urlGameID.toString())) {
-        //If it exists, check that the user is a valid member of the game
-        //Get player IDs
-        var playerIDs = Object.values(gameManager.getGamePlayers(urlGameID));
+        //If it exists, check that the user is a valid member of the game 
+        //and that their session matches their pieces colour
+        //Get players
+        var players = gameManager.getGamePlayers(urlGameID);
         //Check if they are players in the game
-        if (Object.values(playerIDs).includes(urlSessionID)) {
+        console.log(players[urlSide]);
+        if (players[urlSide] == urlSessionID) {
             //Send user to game page
             res.render("gamepage");
         } else {
@@ -103,7 +107,8 @@ listener.on("connection", function(socket) {
             //Get players from game object
             var players = (gameManager.getGamePlayers(gameID));
             //Emit an event to users to let them know they can redirect to the game page
-            gameManager.emitEventToPlayers(gameID, listener, "gameCreated", gameID);
+            gameManager.emitEventToPlayer(gameID, "white", listener, "gameCreated", {side: "white", gameID: gameID});
+            gameManager.emitEventToPlayer(gameID, "black", listener, "gameCreated", {side: "black", gameID: gameID});
 
         } else {
             console.log("No Game!");
@@ -112,7 +117,8 @@ listener.on("connection", function(socket) {
 
     //listen for clients trying to make moves
     socket.on("startMove", function(data) {
-        console.log(data.source, data.piece, data.target);
+        var legal = gameManager.getGames()[data.gameID].game.startMove(data.source, data.piece, data.target);
+        console.log(legal);
     });
 
 });

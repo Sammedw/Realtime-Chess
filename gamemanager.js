@@ -1,3 +1,6 @@
+//Import chess class
+const RealTimeChess = require("./realtimechess.js");
+
 
 class GameManager {
 
@@ -36,8 +39,10 @@ class GameManager {
             //Get players from queue
             var white = this.queue.shift();
             var black = this.queue.shift();
+            //Creatr a new chess object
+            var chessGame = new RealTimeChess();
             //Create new game object
-            var newGame = { "white": white, "black": black };
+            var newGame = { "white": white, "black": black, "game": chessGame };
             //Add new game to the games list
             this.games[gameID] = newGame;
             return gameID
@@ -68,6 +73,13 @@ class GameManager {
             //Game doesn't exist
             return false;
         }
+    }
+
+    //Emits a socketIO messeage to specific player in game given piece colour
+    emitEventToPlayer(gameID, side, socket, event, data) {
+        //Get player from game object
+        console.log(this.getGamePlayers(gameID)[side]);
+        socket.to(connectedUsers[this.getGamePlayers(gameID)[side]]).emit(event, data);
     }
 
     //Emits a socketIO message to players of a given game
