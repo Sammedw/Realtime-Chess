@@ -117,8 +117,13 @@ listener.on("connection", function(socket) {
 
     //listen for clients trying to make moves
     socket.on("startMove", function(data) {
-        var legal = gameManager.getGames()[data.gameID].game.startMove(data.source, data.piece, data.target);
+        //Get game by gameID
+        var game = gameManager.getGames()[data.gameID].game;
+        //Check if the move made is legal
+        var legal = game.startMove(data.source, data.piece, data.target);
+        //return if the move was legal
         console.log(legal);
+        socket.emit("startMoveResponse", legal);
     });
 
 });
