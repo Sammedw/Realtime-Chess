@@ -21,11 +21,12 @@ const cooldown = 5;
 //Create new board object
 var config = {
     draggable: true,
-    moveSpeed: 500,
-    snapBackSpeed: 1000000,
+    moveSpeed: 2000,
+    snapBackSpeed: 10000000000,
     position: "start",
     orientation: extractGameInfoFromURL().side,
-    onDrop: onDrop
+    onDrop: onDrop,
+    onDragStart: onDragStart
 }
 
 //Create new chess board object
@@ -53,11 +54,18 @@ function displayCooldown(square, cooldown) {
 }
 
 //Events
+function onDragStart(source, piece, pos, orientation) {
+    //Check if player is moving their own pieces
+    if (piece.charAt(0) != orientation.charAt(0)) {
+        return false;
+    }
+}
 
 function onDrop(source, target, piece, newPos, oldPos, orientation) {
     //emit message to server
     socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, source: source, target: target, piece: piece, side: orientation});
-    return "snapback";
+    console.log("snap");
+    //return "snapback";
 }
 
 
