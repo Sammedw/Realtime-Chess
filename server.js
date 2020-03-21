@@ -21,8 +21,9 @@ app.use(cookieParser());
 const gameManager = new GameManager();
 
 //Start server
-const server = app.listen(4000, function () {
-    console.log("listening on port 4000");
+var PORT = process.env.PORT || 4000;
+const server = app.listen(PORT, function () {
+    console.log("listening on port " + PORT);
 })
 
 //Socket setup

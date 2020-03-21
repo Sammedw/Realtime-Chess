@@ -58,14 +58,18 @@ function onDrop(source, target, piece, newPos, oldPos, orientation) {
     //emit message to server
     socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, source: source, target: target, piece: piece, side: orientation});
     //Wait for responses from server for startMove event
-    socket.once("startMoveResponse", function(legal) {
-        console.log("Recieved");
-        console.log(legal);
-        console.log(legalMove);
-        //legalMove = legal;
-        return "snapback";
+    return new Promise(function(resolve, reject) {
+        console.log("Start Listen");
+        socket.once("startMoveResponse", function(legal) {
+            console.log("Recieved");
+            if (legal == false) {
+                resolve("snapback");
+            }      
+        });   
     });
+   
 }
+
 
 
 

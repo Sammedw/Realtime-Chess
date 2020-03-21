@@ -1,6 +1,6 @@
 //Make Connection
-//192.168.0.67
-const socket = io.connect("http://192.168.0.75:4000");
+var HOST = location.origin
+const socket = io.connect(HOST);
 
  //get cookie
  var sessionCookie = document.cookie;
