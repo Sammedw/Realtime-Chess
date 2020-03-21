@@ -1,0 +1,31 @@
+{
+  "name": "chessnea",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "chess.js": "^0.10.3",
+    "cookie-parser": "^1.4.4",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2",
+    "pug": "^2.0.4",
+    "socket.io": "^2.3.0",
+    "sqlite3": "^4.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sammedw/ChessNEA.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sammedw/ChessNEA/issues"
+  },
+  "homepage": "https://github.com/Sammedw/ChessNEA#readme"
+}
