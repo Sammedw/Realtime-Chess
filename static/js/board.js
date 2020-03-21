@@ -15,16 +15,18 @@ function extractGameInfoFromURL() {
     return {side: side, gameID: gameID};
 }
 
+//Define cooldown time
+const cooldown = 5;
+
 //Create new board object
 var config = {
     draggable: true,
+    moveSpeed: 500,
+    snapBackSpeed: 1000000,
     position: "start",
     orientation: extractGameInfoFromURL().side,
     onDrop: onDrop
 }
-
-//Define cooldown time
-const cooldown = 5;
 
 //Create new chess board object
 var board = Chessboard("board", config);
@@ -52,25 +54,17 @@ function displayCooldown(square, cooldown) {
 
 //Events
 
-var legalMove = true;
-
 function onDrop(source, target, piece, newPos, oldPos, orientation) {
     //emit message to server
     socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, source: source, target: target, piece: piece, side: orientation});
-    //Wait for responses from server for startMove event
-    return new Promise(function(resolve, reject) {
-        console.log("Start Listen");
-        socket.once("startMoveResponse", function(legal) {
-            console.log("Recieved");
-            if (legal == false) {
-                resolve("snapback");
-            }      
-        });   
-    });
-   
+    return "snapback";
 }
 
 
+//Listen for moves approved by server
+socket.on("startMoveResponse", function(data){
+    board.move(data.source + "-" + data.target);
+});
 
 
 //Listener for button click

@@ -48,6 +48,8 @@ class RealTimeChess {
                 return false;
             }
             
+        } else {
+            return true;
         }
     }
 

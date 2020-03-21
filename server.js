@@ -124,7 +124,12 @@ listener.on("connection", function(socket) {
         var legal = game.startMove(data.source, data.piece, data.target);
         //return if the move was legal
         console.log(legal);
-        socket.emit("startMoveResponse", legal);
+        //socket.emit("startMoveResponse", legal);
+        //If legal send to other player
+        if (legal == true) {
+            gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
+            
+        }
     });
 
 });
