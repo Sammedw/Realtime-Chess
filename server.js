@@ -132,10 +132,15 @@ listener.on("connection", function(socket) {
         }
     });
 
+    //Listen for the completion of moves
+    socket.on("endMove", function(data){
+        console.log("Move complete!");
+    });
+
 });
 
 
 //Page couldn't be found middleware
 app.use(function (req, res, next) {
     res.status(404).send("Sorry can't find that!")
-})
+});

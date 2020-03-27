@@ -36,7 +36,7 @@ class RealTimeChess {
                         //The piece on valid sqaure has opposite colour
                         return true;
                     } else {
-                        //The piece on swaure has same colour
+                        //The piece on sqaure has same colour
                         return false;
                     }
                 } else {
@@ -49,7 +49,45 @@ class RealTimeChess {
             }
             
         } else {
-            return true;
+            //Piece is not king
+            //Get current chess position
+            var currentChessPos = this.chess.fen();
+            //Change the turn to player making move
+            if (pieceColour == "w") {
+                //use regular expressions to locate part of string containing the turn
+                currentChessPos = currentChessPos.replace(/ [wb] /, " w ");
+            } else {
+                currentChessPos = currentChessPos.replace(/ [wb] /, " b ");
+            }
+            var currentBoard = new Chess(currentChessPos);
+            var valid;
+            //Loop through pieces on board to locate oppoments king
+            ["a", "b", "c", "d", "e", "f", "g", "h"].forEach(function(column) {
+                var row = 1;
+                for (row; row <=8; row++) {
+                    //get piece on current sqaure
+                    var square = column + row.toString();
+                    var currentPiece = currentBoard.get(square);  
+                    //Check if the currentPiece is king and the opposite colour
+                    if (currentPiece != null) {
+                        if (currentPiece.type == "k" && currentPiece.color != pieceColour) {
+                            //Remove opponents king to evaulate the move
+                            currentBoard.remove(square);
+                            //Check if move is valid
+                            valid = currentBoard.move({from: source, to: target});
+                            
+                        }
+                    }
+                    
+                }
+            });
+
+            //Return true if the move was valid
+            if (valid != null) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
