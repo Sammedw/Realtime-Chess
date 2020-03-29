@@ -11,25 +11,25 @@ class RealTimeChess {
         this.cooldownList = [];
     }
 
-    addPieceCooldown(square, piece) {
+    addPieceCooldown(square) {
         //add sqaure to cooldown with corresponding piece
-        this.cooldownList.push((square+piece).toLowerCase())
+        this.cooldownList.push(square);
     }
 
-    removePieceCooldown(square, piece) {
+    removePieceCooldown(square) {
         //check the cooldown exists
-        if (this.queryPieceCooldown(square, piece) == true) {
+        if (this.queryPieceCooldown(square) == true) {
             //get index of piece in list
-            var index = this.cooldownList.indexOf((square+piece).toLowerCase());
+            var index = this.cooldownList.indexOf(square);
             //remove the piece
             this.cooldownList.splice(index, 1);
         }
     }
 
-    queryPieceCooldown(square, piece) {
-        console.log((square+piece).toLowerCase());
+    queryPieceCooldown(square) {
+        console.log(square);
         console.log(this.cooldownList);
-        if (this.cooldownList.includes((square+piece).toLowerCase())) {
+        if (this.cooldownList.includes(square)) {
             console.log("On cooldown NOPE");
             return true;
         } else {
@@ -90,28 +90,59 @@ class RealTimeChess {
             } else {
                 currentChessPos = currentChessPos.replace(/ [wb] /, " b ");
             }
+
             var currentBoard = new Chess(currentChessPos);
             var valid;
-            //Loop through pieces on board to locate oppoments king
-            ["a", "b", "c", "d", "e", "f", "g", "h"].forEach(function(column) {
+            var kingSquare;
+
+            //Loop through pieces on board to locate king
+            const columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
+            columns.forEach(function(column) {
                 var row = 1;
                 for (row; row <=8; row++) {
                     //get piece on current sqaure
-                    var square = column + row.toString();
-                    var currentPiece = currentBoard.get(square);  
-                    //Check if the currentPiece is king and the opposite colour
+                    var currentSquare = column + row.toString();
+                    var currentPiece = currentBoard.get(currentSquare); 
+                    //check if there is piece on square 
                     if (currentPiece != null) {
-                        if (currentPiece.type == "k" && currentPiece.color != pieceColour) {
-                            //Remove opponents king to evaulate the move
-                            currentBoard.remove(square);
-                            //Check if move is valid
-                            valid = currentBoard.move({from: source, to: target});
-                            
+                        //Check if the currentPiece is king and the same colour
+                        if (currentPiece.type == "k" && currentPiece.color == pieceColour) {
+                           kingSquare = currentSquare;
+                           break;
+                        }
+                    }  
+                }
+            });  
+
+            //Remove king to evaulate the move
+            var king = currentBoard.remove(kingSquare);
+            
+            //Loop over blank pieces to find safe square - must use seperate loop as king must be removed
+            //before placing another king to test for safe squares
+            columns.forEach(function(column) {
+                var row = 1;
+                for (row; row <=8; row++) {
+                    //get piece on current sqaure
+                    var currentSquare = column + row.toString();
+                    var currentPiece = currentBoard.get(currentSquare);
+                    //check if there is piece on square 
+                    if (currentPiece == null) {
+                        //Place king on square
+                        currentBoard.put(king, currentSquare);
+                        //Check if king is in check
+                        if (!(currentBoard.in_check())) {
+                            //If not break
+                            break;
+                        } else {
+                            //If so, remove king and try next square
+                            currentBoard.remove(currentSquare);
                         }
                     }
-                    
                 }
-            });
+            }); 
+            
+            //Check if move is valid
+            valid = currentBoard.move({from: source, to: target});
 
             //Return true if the move was valid
             if (valid != null) {
@@ -135,6 +166,7 @@ class RealTimeChess {
     addPiece(target, piece) {
         //add piece to target sqaure
         this.chess.put({type: piece.charAt(1), color: piece.charAt(0)}, target);
+        console.log(this.chess.ascii());
     }
 }
 
