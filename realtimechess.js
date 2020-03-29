@@ -122,17 +122,20 @@ class RealTimeChess {
         }
     }
 
-    makeMove(source, piece, target) {
+    removePiece(source, piece) {
         //remove piece from source sqaure
-        //check that a new piece hasn't taken the original place
+        //check that the correct piece is being removed
         var pieceOnSource = this.chess.get(source);
         if (piece.toLowerCase() == (pieceOnSource.color+pieceOnSource.type).toLowerCase()){
             this.chess.remove(source);
         }   
+        
+    }
+
+    addPiece(target, piece) {
         //add piece to target sqaure
         this.chess.put({type: piece.charAt(1), color: piece.charAt(0)}, target);
     }
-
 }
 
 //Export the GameManager Class

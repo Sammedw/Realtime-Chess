@@ -130,6 +130,8 @@ listener.on("connection", function(socket) {
             gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
             //Put piece on cooldown
             game.addPieceCooldown(data.target, data.piece);
+            //Remove piece from board as its in flight
+            game.removePiece(data.source, data.piece)
              //Get cooldown and movespeed
              var cooldown = gameManager.getGameCooldownTime(data.gameID);
              var moveSpeed = gameManager.getGameMoveSpeed(data.gameID);
@@ -147,7 +149,7 @@ listener.on("connection", function(socket) {
         //get the game
         var game = gameManager.getGames()[gameID].game;
         //save the move
-        game.makeMove(source, piece, target);
+        game.addPiece(target, piece);
         console.log(game.chess.ascii());
     }
 
