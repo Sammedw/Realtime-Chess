@@ -11,7 +11,38 @@ class RealTimeChess {
         this.cooldownList = [];
     }
 
-    startMove(source, piece, target) {
+    addPieceCooldown(square, piece) {
+        //add sqaure to cooldown with corresponding piece
+        this.cooldownList.push((square+piece).toLowerCase())
+    }
+
+    removePieceCooldown(square, piece) {
+        //check the cooldown exists
+        if (this.queryPieceCooldown(square, piece) == true) {
+            //get index of piece in list
+            var index = this.cooldownList.indexOf((square+piece).toLowerCase());
+            //remove the piece
+            this.cooldownList.splice(index, 1);
+        }
+    }
+
+    queryPieceCooldown(square, piece) {
+        console.log((square+piece).toLowerCase());
+        console.log(this.cooldownList);
+        if (this.cooldownList.includes((square+piece).toLowerCase())) {
+            console.log("On cooldown NOPE");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    evalMove(source, piece, target) {
+        //Firtly check if the piece is on cooldown
+        if (this.queryPieceCooldown(source, piece) == true) {
+            return false;
+        }
         //get piece type and colour that was moved
         var pieceColour = piece.charAt(0);
         var pieceType = piece.charAt(1);
@@ -89,6 +120,17 @@ class RealTimeChess {
                 return false;
             }
         }
+    }
+
+    makeMove(source, piece, target) {
+        //remove piece from source sqaure
+        //check that a new piece hasn't taken the original place
+        var pieceOnSource = this.chess.get(source);
+        if (piece.toLowerCase() == (pieceOnSource.color+pieceOnSource.type).toLowerCase()){
+            this.chess.remove(source);
+        }   
+        //add piece to target sqaure
+        this.chess.put({type: piece.charAt(1), color: piece.charAt(0)}, target);
     }
 
 }

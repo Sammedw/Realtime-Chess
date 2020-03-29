@@ -15,19 +15,19 @@ function extractGameInfoFromURL() {
     return {side: side, gameID: gameID};
 }
 
-//Define cooldown time
-const cooldown = 5;
+//Define cooldown time and piece move speed
+//const cooldown = 5;
+//const moveSpeed = 2000;
 
 //Create new board object
 var config = {
     draggable: true,
-    moveSpeed: 2000,
+    moveSpeed: moveSpeed,
     snapBackSpeed: "fast",
     position: "start",
     orientation: extractGameInfoFromURL().side,
     onDrop: onDrop,
-    onDragStart: onDragStart,
-    onMoveEnd: onMoveEnd
+    onDragStart: onDragStart
 }
 
 //Create new chess board object
@@ -40,26 +40,24 @@ var cooldownBtn = document.getElementById("cooldown");
 function displayCooldown(square, cooldown) {
     //Finds the div with the class name that contains the specific sqaure with a regex like statement
     //style.cssText - to change multiple styles at once
-
     //Locate the sqaure
     var squareDiv = document.querySelectorAll('div[class*="square-' + square + '"]')[0];
     //Set animation time to the cooldown time
-    squareDiv.style.transition = "background-position " + cooldown + "s linear";
+    squareDiv.style.transition = "background-position " + cooldown/1000 + "s linear";
     //Start moving the background
     squareDiv.style.backgroundPosition = "left bottom";
     setTimeout(function () {
         //After the animation is completed, set animation speed to 0 and return to original position
         squareDiv.style.transition = "background-position 0s linear";
         squareDiv.style.backgroundPosition = "left top";
-    }, cooldown * 1000);
+    }, cooldown);
 }
 
 //Events
 function onDragStart(source, piece, pos, orientation) {
     //Check if player is moving their own pieces
     if (piece.charAt(0) != orientation.charAt(0)) {
-        return false;
-        
+        return false;     
     }
 }
 
@@ -69,18 +67,19 @@ function onDrop(source, target, piece, newPos, oldPos, orientation) {
     return "snapback";
 }
 
-function onMoveEnd(oldPos, newPos) {
-    socket.emit("endMove");
-}
 
 //Listen for moves approved by server
 socket.on("startMoveResponse", function(data){
     board.move(data.source + "-" + data.target);
+    setTimeout(function(sqaure) { onMoveEnd(sqaure)}, moveSpeed, data.target);
 });
 
+function onMoveEnd(square) {
+    //display cooldown animation
+    displayCooldown(square, cooldown);
+}
 
 //Listener for button click
 cooldownBtn.addEventListener("click", function () {
     displayCooldown("e4", cooldown);
-    console.log(socket.id);
 });

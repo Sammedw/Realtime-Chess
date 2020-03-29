@@ -70,8 +70,11 @@ app.get("/game/:gameID/:side/:sessionID", function (req, res) {
         //Check if they are players in the game
         console.log(players[urlSide]);
         if (players[urlSide] == urlSessionID) {
+            //Get cooldown and movespeed to send to client
+            var cooldown = gameManager.getGameCooldownTime(urlGameID);
+            var moveSpeed = gameManager.getGameMoveSpeed(urlGameID);
             //Send user to game page
-            res.render("gamepage");
+            res.render("gamepage", {cooldown: cooldown, moveSpeed: moveSpeed});
         } else {
             //They are not part of the game, redirect user to home
             res.redirect("/");
@@ -121,21 +124,40 @@ listener.on("connection", function(socket) {
         //Get game by gameID
         var game = gameManager.getGames()[data.gameID].game;
         //Check if the move made is legal
-        var legal = game.startMove(data.source, data.piece, data.target);
-        //return if the move was legal
-        console.log(legal);
-        //socket.emit("startMoveResponse", legal);
-        //If legal send to other player
+        var legal = game.evalMove(data.source, data.piece, data.target);
         if (legal == true) {
+            //If legal send the move to both players
             gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
-            
+            //Put piece on cooldown
+            game.addPieceCooldown(data.target, data.piece);
+             //Get cooldown and movespeed
+             var cooldown = gameManager.getGameCooldownTime(data.gameID);
+             var moveSpeed = gameManager.getGameMoveSpeed(data.gameID);
+            //Set timer to save the move after move is completed (movetime)
+            setTimeout(function(source, piece, target, gameID) {endMove(source, piece, target, gameID)}, moveSpeed, 
+                data.source, data.piece, data.target, data.gameID);
+            //set timer after cooldown has finished (cooldowntime + movetime)
+            setTimeout(function(target, piece, gameID) {endCooldown(target, piece, gameID)}, moveSpeed+cooldown,
+                data.target, data.piece, data.gameID);
         }
     });
 
-    //Listen for the completion of moves
-    socket.on("endMove", function(data){
-        console.log("Move complete!");
-    });
+    function endMove(source, piece, target, gameID) {
+        console.log("move complete");
+        //get the game
+        var game = gameManager.getGames()[gameID].game;
+        //save the move
+        game.makeMove(source, piece, target);
+        console.log(game.chess.ascii());
+    }
+
+    function endCooldown(target, piece, gameID) {
+    console.log("cooldown over");
+    //get the game
+    var game = gameManager.getGames()[gameID].game;
+    //remove the cooldown
+    game.removePieceCooldown(target, piece);
+    }
 
 });
 

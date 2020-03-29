@@ -42,7 +42,7 @@ class GameManager {
             //Creatr a new chess object
             var chessGame = new RealTimeChess();
             //Create new game object
-            var newGame = { "white": white, "black": black, "game": chessGame };
+            var newGame = { "white": white, "black": black, "game": chessGame, cooldown: 5*1000, moveTime: 2*1000 };
             //Add new game to the games list
             this.games[gameID] = newGame;
             return gameID
@@ -73,6 +73,16 @@ class GameManager {
             //Game doesn't exist
             return false;
         }
+    }
+
+    //Get cooldown time of game
+    getGameCooldownTime(gameID) {
+        return this.games[gameID].cooldown;
+    }
+
+    //get move speed of game
+    getGameMoveSpeed(gameID) {
+        return this.games[gameID].moveTime;
     }
 
     //Emits a socketIO messeage to specific player in game given piece colour
