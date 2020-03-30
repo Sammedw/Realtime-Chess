@@ -7,31 +7,30 @@ class RealTimeChess {
     constructor() {
         //Composition: create new chess object
         this.chess = new Chess();
-        //Create blank list to keep track of cooldowns
-        this.cooldownList = [];
+        //Create blank dictionary to keep track of cooldowns
+        this.cooldownList = {};
     }
 
-    addPieceCooldown(square) {
+    addPieceCooldown(square, piece) {
         //add sqaure to cooldown with corresponding piece
-        this.cooldownList.push(square);
+        //this.cooldownList.push(square);
+        this.cooldownList[square] = piece;
     }
 
     removePieceCooldown(square) {
         //check the cooldown exists
-        if (this.queryPieceCooldown(square) == true) {
+        if (this.queryPieceCooldown(square) != true) {
             //get index of piece in list
-            var index = this.cooldownList.indexOf(square);
+            //var index = this.cooldownList.indexOf(square);
             //remove the piece
-            this.cooldownList.splice(index, 1);
+            delete this.cooldownList[square]
         }
     }
 
     queryPieceCooldown(square) {
-        console.log(square);
         console.log(this.cooldownList);
-        if (this.cooldownList.includes(square)) {
-            console.log("On cooldown NOPE");
-            return true;
+        if (Object.keys(this.cooldownList).includes(square)) {
+            return this.cooldownList[square];
         } else {
             return false;
         }
@@ -39,17 +38,39 @@ class RealTimeChess {
 
 
     evalMove(source, piece, target) {
-        //Firtly check if the piece is on cooldown
-        if (this.queryPieceCooldown(source, piece) == true) {
-            return false;
-        }
+
         //get piece type and colour that was moved
         var pieceColour = piece.charAt(0);
         var pieceType = piece.charAt(1);
+
+        //Perform checks before evaluating move
+
+        //Firtly check if the piece is on cooldown
+        if (this.queryPieceCooldown(source) != false) {
+            return false;
+        }
+
+        //Check that if a pawn is about to move forward that another piece is not about to take the square
+        if (pieceType.toLowerCase() == "p" && source.charAt(0) == target.charAt(0) &&
+             this.queryPieceCooldown(target) != false) {
+            //A pawn is about to move forward and capture a piece illegally, return false
+            return false;
+        }
+
+        //Check that the target square isn't being travelled to by a friendly piece
+        var targetPiece = this.queryPieceCooldown(target); 
+        if (targetPiece != false) {
+            if (pieceColour == targetPiece.charAt(0)) {
+                //The piece on cooldown on target is friendly and is potentially travelling to sqaure, return false
+                return false;
+            }
+        }
+        
+        
         //check if piece is king 
         if (pieceType == "K") {
             //Check its a valid king move
-            //Create a blank board to test that the king is only moving one sqaure
+            //Create a blank board to test that the king is only moving one square
             var blankBoard = new Chess();
             blankBoard.clear();
             //Place white king on sqaure
@@ -92,7 +113,8 @@ class RealTimeChess {
             }
 
             var currentBoard = new Chess(currentChessPos);
-            var valid;
+            var valid; //Stores the evaluation of current iteration
+            var validMoveFound; //A flag that can be used at end of loop to determine if legal move was found
             var kingSquare;
 
             //Loop through pieces on board to locate king
@@ -114,8 +136,15 @@ class RealTimeChess {
                 }
             });  
 
-            //Remove king to evaulate the move
-            var king = currentBoard.remove(kingSquare);
+            //Check king exists
+            if (kingSquare != null) {
+                //Remove king to evaulate the move
+                var king = currentBoard.remove(kingSquare);
+            } else {
+                //no king exists game must be over, return false
+                return false;
+            }
+           
             
             //Loop over blank pieces to find safe square - must use seperate loop as king must be removed
             //before placing another king to test for safe squares
@@ -126,30 +155,32 @@ class RealTimeChess {
                     var currentSquare = column + row.toString();
                     var currentPiece = currentBoard.get(currentSquare);
                     //check if there is piece on square 
-                    if (currentPiece == null) {
+                    if (!(currentPiece != null)) {
                         //Place king on square
                         currentBoard.put(king, currentSquare);
                         //Check if king is in check
                         if (!(currentBoard.in_check())) {
-                            //If not break
-                            break;
-                        } else {
-                            //If so, remove king and try next square
-                            currentBoard.remove(currentSquare);
+                            //Check if move is valid
+                            valid = currentBoard.move({from: source, to: target});
+                            //If valid break
+                            if (valid != null) {
+                                validMoveFound = true;
+                                break;
+                            }
                         }
+
+                        //Remove king to try again next iteration
+                        currentBoard.remove(currentSquare);
                     }
                 }
             }); 
-            
-            //Check if move is valid
-            valid = currentBoard.move({from: source, to: target});
-
-            //Return true if the move was valid
-            if (valid != null) {
+            //Check if the move was legal
+            //If there was no sqaure the king could be where the move was legal it is safe to assume its illegal
+            if (validMoveFound == true) {
                 return true;
             } else {
                 return false;
-            }
+            }      
         }
     }
 
