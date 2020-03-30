@@ -13,22 +13,21 @@ class RealTimeChess {
 
     addPieceCooldown(square, piece) {
         //add sqaure to cooldown with corresponding piece
-        //this.cooldownList.push(square);
         this.cooldownList[square] = piece;
+        console.log(this.cooldownList);
     }
 
-    removePieceCooldown(square) {
+    removePieceCooldown(square, piece) {
         //check the cooldown exists
-        if (this.queryPieceCooldown(square) != true) {
-            //get index of piece in list
-            //var index = this.cooldownList.indexOf(square);
+        var cooldownPiece = this.queryPieceCooldown(square);
+        if (this.queryPieceCooldown(square) == piece) {
             //remove the piece
             delete this.cooldownList[square]
         }
+        console.log(this.cooldownList);
     }
 
     queryPieceCooldown(square) {
-        console.log(this.cooldownList);
         if (Object.keys(this.cooldownList).includes(square)) {
             return this.cooldownList[square];
         } else {
@@ -75,7 +74,7 @@ class RealTimeChess {
             blankBoard.clear();
             //Place white king on sqaure
             blankBoard.put({type: "k", color: "w"}, source);
-            //Change turn to current player making move
+            //Attempt move
             var valid = blankBoard.move({from: source, to: target});
             //If it is a valid move, check that target piece is not one of their own
             if (valid != null) {
@@ -86,18 +85,25 @@ class RealTimeChess {
                     //Check that target is not a piece of same colour
                     if (targetPiece.color != pieceColour) {
                         //The piece on valid sqaure has opposite colour
-                        return true;
+                        //Check that if the piece captured was on cooldown
+                        if (this.queryPieceCooldown(target, piece) != false) {
+                             //return second value as true to indicate a cooldown has been interrupted
+                            return {legal: true, interrupt: true};
+                        } else {
+                            return {legal: true, interrupt: false};
+                        }
+
                     } else {
                         //The piece on sqaure has same colour
-                        return false;
+                        return {legal: false};
                     }
                 } else {
                     //No piece on valid square
-                    return true;
+                    return {legal: true, interrupt: false};
                 }
             } else {
                 //Not a valid sqaure for king
-                return false;
+                return {legal: false};
             }
             
         } else {
@@ -115,7 +121,7 @@ class RealTimeChess {
             var currentBoard = new Chess(currentChessPos);
             var valid; //Stores the evaluation of current iteration
             var validMoveFound; //A flag that can be used at end of loop to determine if legal move was found
-            var kingSquare;
+            var kingSquare = null;
 
             //Loop through pieces on board to locate king
             const columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -139,11 +145,10 @@ class RealTimeChess {
             //Check king exists
             if (kingSquare != null) {
                 //Remove king to evaulate the move
-                var king = currentBoard.remove(kingSquare);
-            } else {
-                //no king exists game must be over, return false
-                return false;
+                currentBoard.remove(kingSquare);
             }
+
+            //If king not found, it must be in flight
            
             
             //Loop over blank pieces to find safe square - must use seperate loop as king must be removed
@@ -157,11 +162,11 @@ class RealTimeChess {
                     //check if there is piece on square 
                     if (!(currentPiece != null)) {
                         //Place king on square
-                        currentBoard.put(king, currentSquare);
+                        currentBoard.put({type: "k", color: pieceColour}, currentSquare);
                         //Check if king is in check
                         if (!(currentBoard.in_check())) {
                             //Check if move is valid
-                            valid = currentBoard.move({from: source, to: target});
+                            valid = currentBoard.move({from: source, to: target, promotion: "q"});
                             //If valid break
                             if (valid != null) {
                                 validMoveFound = true;
@@ -177,9 +182,30 @@ class RealTimeChess {
             //Check if the move was legal
             //If there was no sqaure the king could be where the move was legal it is safe to assume its illegal
             if (validMoveFound == true) {
-                return true;
+                var returnObject = {legal: true};
+                //check if a special move was made
+                var row = target.charAt(1);
+                if (pieceType.toLowerCase() == "p") {
+                    if ((pieceColour == "w" && row == "8") || (pieceColour == "b" && row == "1")) {
+                        returnObject.special = true;
+                        //Create new board with same position
+                        var specialPosition = new Chess(this.getPosition());
+                        specialPosition.put({type: "q", color: pieceColour}, target);
+                        specialPosition.remove(source);
+                        returnObject.specialPosition = specialPosition.fen();
+                    }
+                }
+                //Check that if the piece captured was on cooldown
+                if (this.queryPieceCooldown(target, piece) != false) {
+                    returnObject.interrupt = true
+                } else {
+                    returnObject.interrupt = false
+                }
+
+                return returnObject;
+
             } else {
-                return false;
+                return {legal: false};
             }      
         }
     }
@@ -197,7 +223,10 @@ class RealTimeChess {
     addPiece(target, piece) {
         //add piece to target sqaure
         this.chess.put({type: piece.charAt(1), color: piece.charAt(0)}, target);
-        console.log(this.chess.ascii());
+    }
+
+    getPosition() {
+        return this.chess.fen();
     }
 }
 

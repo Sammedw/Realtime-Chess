@@ -15,10 +15,6 @@ function extractGameInfoFromURL() {
     return {side: side, gameID: gameID};
 }
 
-//Define cooldown time and piece move speed
-//const cooldown = 5;
-//const moveSpeed = 2000;
-
 //Create new board object
 var config = {
     draggable: true,
@@ -33,8 +29,12 @@ var config = {
 //Create new chess board object
 var board = Chessboard("board", config);
 
+//Create list that keeps track of squares with interrupted cooldowns
+var interruptedCooldowns = [];
+
 //get button on the page
 var cooldownBtn = document.getElementById("cooldown");
+var stopBtn = document.getElementById("stop");
 
 
 function displayCooldown(square, cooldown) {
@@ -47,10 +47,23 @@ function displayCooldown(square, cooldown) {
     //Start moving the background
     squareDiv.style.backgroundPosition = "left bottom";
     setTimeout(function () {
-        //After the animation is completed, set animation speed to 0 and return to original position
-        squareDiv.style.transition = "background-position 0s linear";
-        squareDiv.style.backgroundPosition = "left top";
+        //Check that the animation was not interrupted before resetting
+        if (!(interruptedCooldowns.includes(square))) {
+            //After the animation is completed, set animation speed to 0 and return to original position
+            squareDiv.style.transition = "background-position 0s linear";
+            squareDiv.style.backgroundPosition = "left top";
+        } else {
+            //remove square from list so that next time the animation is cancelled
+            interruptedCooldowns.splice(interruptedCooldowns.indexOf(square), 1);
+        }
     }, cooldown);
+}
+
+function removeCooldown(square) {
+    //Locate the sqaure
+    var squareDiv = document.querySelectorAll('div[class*="square-' + square + '"]')[0];
+    squareDiv.style.transition = "background-position 0s linear";
+    squareDiv.style.backgroundPosition = "left top";
 }
 
 //Events
@@ -70,7 +83,12 @@ function onDrop(source, target, piece, newPos, oldPos, orientation) {
 
 //Listen for moves approved by server
 socket.on("startMoveResponse", function(data){
-    board.move(data.source + "-" + data.target);
+    if (data.special == true) {
+        board.position(data.specialPosition.split(" ")[0]);
+    } else {
+        board.move(data.source + "-" + data.target);
+    }
+    
     setTimeout(function(sqaure) { onMoveEnd(sqaure)}, moveSpeed, data.target);
 });
 
@@ -79,7 +97,19 @@ function onMoveEnd(square) {
     displayCooldown(square, cooldown);
 }
 
+//Listen for cooldown interruptions
+socket.on("cooldownInterruption", function(square) {
+    removeCooldown(square);
+    interruptedCooldowns.push(square);
+});
+
+
 //Listener for button click
 cooldownBtn.addEventListener("click", function () {
     displayCooldown("e4", cooldown);
+});
+
+//Listener for button click
+stopBtn.addEventListener("click", function () {
+    removeCooldown("e4");
 });

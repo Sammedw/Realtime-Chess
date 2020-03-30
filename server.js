@@ -107,7 +107,7 @@ listener.on("connection", function(socket) {
         var gameID = gameManager.createNewGame();
         //if gameID is false then no game was created
         if (gameID) {
-            console.log("Success!", gameID);
+            console.log("Game created", gameID);
             //Get players from game object
             var players = (gameManager.getGamePlayers(gameID));
             //Emit an event to users to let them know they can redirect to the game page
@@ -115,7 +115,7 @@ listener.on("connection", function(socket) {
             gameManager.emitEventToPlayer(gameID, "black", listener, "gameCreated", {side: "black", gameID: gameID});
 
         } else {
-            console.log("No Game!");
+            console.log("Not enough players in queue");
         }
     });
 
@@ -124,37 +124,48 @@ listener.on("connection", function(socket) {
         //Get game by gameID
         var game = gameManager.getGames()[data.gameID].game;
         //Check if the move made is legal
-        var legal = game.evalMove(data.source, data.piece, data.target);
-        if (legal == true) {
+        //If the move is legal, a list is returned with the 2nd element being whether an enemy cooldown was interrupted
+        var result = game.evalMove(data.source, data.piece, data.target);
+        if (result.legal == true) {
             //If legal send the move to both players
+            if (result.special == true){
+                data.special = true;
+                data.specialPosition = result.specialPosition;
+            }
             gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
             //Put piece on cooldown
             game.addPieceCooldown(data.target, data.piece);
+            //Check if a captured piece's cooldown was interrupted
+            if (result.interrupt == true) {
+                //Emit message to client to reset cooldown animation
+                gameManager.emitEventToPlayers(data.gameID, listener, "cooldownInterruption", data.target);
+            }
             //Remove piece from board as its in flight
             game.removePiece(data.source, data.piece)
              //Get cooldown and movespeed
              var cooldown = gameManager.getGameCooldownTime(data.gameID);
              var moveSpeed = gameManager.getGameMoveSpeed(data.gameID);
             //Set timer to save the move after move is completed (movetime)
-            setTimeout(function(source, piece, target, gameID) {endMove(source, piece, target, gameID)}, moveSpeed, 
-                data.source, data.piece, data.target, data.gameID);
+            setTimeout(function(source, piece, target, gameID) {endMove(source, piece, target, gameID, data.specialPosition)}, 
+            moveSpeed, data.source, data.piece, data.target, data.gameID);
             //set timer after cooldown has finished (cooldowntime + movetime)
             setTimeout(function(target, piece, gameID) {endCooldown(target, piece, gameID)}, moveSpeed+cooldown,
                 data.target, data.piece, data.gameID);
         }
     });
 
-    function endMove(source, piece, target, gameID) {
-        console.log("move complete");
+    function endMove(source, piece, target, gameID, specialPosition) {
         //get the game
         var game = gameManager.getGames()[gameID].game;
-        //save the move
-        game.addPiece(target, piece);
-        console.log(game.chess.ascii());
+        //check for pawn promotion
+        if (specialPosition) {
+            game.chess.load(specialPosition);
+        } else {
+            game.addPiece(target, piece);
+        }
     }
 
     function endCooldown(target, piece, gameID) {
-    console.log("cooldown over");
     //get the game
     var game = gameManager.getGames()[gameID].game;
     //remove the cooldown

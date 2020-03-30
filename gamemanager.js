@@ -42,7 +42,7 @@ class GameManager {
             //Creatr a new chess object
             var chessGame = new RealTimeChess();
             //Create new game object
-            var newGame = { "white": white, "black": black, "game": chessGame, cooldown: 5*1000, moveTime: 2*1000 };
+            var newGame = { "white": white, "black": black, "game": chessGame, cooldown: 5*1000, moveTime: 0.5*1000 };
             //Add new game to the games list
             this.games[gameID] = newGame;
             return gameID
