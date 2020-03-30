@@ -122,35 +122,39 @@ listener.on("connection", function(socket) {
     //listen for clients trying to make moves
     socket.on("startMove", function(data) {
         //Get game by gameID
-        var game = gameManager.getGames()[data.gameID].game;
-        //Check if the move made is legal
-        //If the move is legal, a list is returned with the 2nd element being whether an enemy cooldown was interrupted
-        var result = game.evalMove(data.source, data.piece, data.target);
-        if (result.legal == true) {
-            //If legal send the move to both players
-            if (result.special == true){
-                data.special = true;
-                data.specialPosition = result.specialPosition;
+        if (gameManager.doesGameExist(data.gameID)) {
+            var game = gameManager.getGames()[data.gameID].game;
+            //Check if the move made is legal
+            //If the move is legal, a list is returned with the 2nd element being whether an enemy cooldown was interrupted
+            var result = game.evalMove(data.source, data.piece, data.target);
+            if (result.legal == true) {
+                //If legal send the move to both players
+                if (result.special == true){
+                    data.special = true;
+                    data.specialPosition = result.specialPosition;
+                }
+                gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
+                //Put piece on cooldown
+                game.addPieceCooldown(data.target, data.piece);
+                //Check if a captured piece's cooldown was interrupted
+                if (result.interrupt == true) {
+                    //Emit message to client to reset cooldown animation
+                    gameManager.emitEventToPlayers(data.gameID, listener, "cooldownInterruption", data.target);
+                }
+                //Remove piece from board as its in flight
+                game.removePiece(data.source, data.piece)
+                //Get cooldown and movespeed
+                var cooldown = gameManager.getGameCooldownTime(data.gameID);
+                var moveSpeed = gameManager.getGameMoveSpeed(data.gameID);
+                //Set timer to save the move after move is completed (movetime)
+                setTimeout(function(source, piece, target, gameID) {endMove(source, piece, target, gameID, data.specialPosition)}, 
+                moveSpeed, data.source, data.piece, data.target, data.gameID);
+                //set timer after cooldown has finished (cooldowntime + movetime)
+                setTimeout(function(target, piece, gameID) {endCooldown(target, piece, gameID)}, moveSpeed+cooldown,
+                    data.target, data.piece, data.gameID);
             }
-            gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
-            //Put piece on cooldown
-            game.addPieceCooldown(data.target, data.piece);
-            //Check if a captured piece's cooldown was interrupted
-            if (result.interrupt == true) {
-                //Emit message to client to reset cooldown animation
-                gameManager.emitEventToPlayers(data.gameID, listener, "cooldownInterruption", data.target);
-            }
-            //Remove piece from board as its in flight
-            game.removePiece(data.source, data.piece)
-             //Get cooldown and movespeed
-             var cooldown = gameManager.getGameCooldownTime(data.gameID);
-             var moveSpeed = gameManager.getGameMoveSpeed(data.gameID);
-            //Set timer to save the move after move is completed (movetime)
-            setTimeout(function(source, piece, target, gameID) {endMove(source, piece, target, gameID, data.specialPosition)}, 
-            moveSpeed, data.source, data.piece, data.target, data.gameID);
-            //set timer after cooldown has finished (cooldowntime + movetime)
-            setTimeout(function(target, piece, gameID) {endCooldown(target, piece, gameID)}, moveSpeed+cooldown,
-                data.target, data.piece, data.gameID);
+        } else {
+            console.log("Move requested on non-existent game");
         }
     });
 
