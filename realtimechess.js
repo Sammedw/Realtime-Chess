@@ -9,6 +9,8 @@ class RealTimeChess {
         this.chess = new Chess();
         //Create blank dictionary to keep track of cooldowns
         this.cooldownList = {};
+        //Set to true when the game is over
+        this.gameOver = false;
     }
 
     //Utility Methods
@@ -112,7 +114,7 @@ class RealTimeChess {
         var currentBoard = new Chess(currentChessPos);
         var valid; //Stores the evaluation of current iteration
         var validMoveFound; //A flag that can be used at end of loop to determine if legal move was found
-        var kingSquare = null;
+        var kingSquare = null; //contains the square which the friendly king is on
 
         //Loop through pieces on board to locate king
         const columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -126,6 +128,7 @@ class RealTimeChess {
                 if (currentPiece != null) {
                     //Check if the currentPiece is king and the same colour
                     if (currentPiece.type == "k" && currentPiece.color == pieceColour) {
+                    //save current square as kingSquare
                     kingSquare = currentSquare;
                     break;
                     }
@@ -134,19 +137,25 @@ class RealTimeChess {
         });  
 
         //Check that you are not moving through your own king
+        //This must be done as the king is removed from the board to evaluate the move
         if (pieceType.toLowerCase() != "p") {
+            //Test for non pawn pieces i.e. those that can move more than one sqaure
+            //Create blank board
             var kingTestBoard = new Chess();    
             kingTestBoard.clear();
+            //Place king of same colour on board
             kingTestBoard.put({type: "k", color:pieceColour}, kingSquare);
+            //place piece that is trying to move on board
             kingTestBoard.put({type: pieceType.toLowerCase(), color: pieceColour}, source);
+            //Change turn to current player
             kingTestBoard.load(this.changeTurn(kingTestBoard.fen(), pieceColour));
+            //test the move, checking that the piece is not moving through the king
             valid = kingTestBoard.move({from: source, to: target, promotion:"q"});
             if (valid) {
             } else {
-                console.log("illegal");
-                console.log(kingTestBoard.ascii());
                 return {legal: false};
-            }
+            } 
+        //As pawns can only move one sqaure, check that the target square does not contain friendly king
         } else if (target == kingSquare){
             return {legal: false};
         }
@@ -177,7 +186,7 @@ class RealTimeChess {
                         //Check if move is valid
                         valid = currentBoard.move({from: source, to: target, promotion: "q"});
                         //If valid break
-                        if (valid != null) {
+                        if (valid) {
                             validMoveFound = true;
                             break;
                         }
@@ -188,32 +197,43 @@ class RealTimeChess {
                 }
             }
         }); 
-        //Check if the move was legal
+
+        //Check if valid move was found
         //If there was no sqaure the king could be where the move was legal it is safe to assume its illegal
         if (validMoveFound == true) {
             var returnObject = {legal: true};
-            //check if a special move was made
-            var row = target.charAt(1);
+
+            //check if a pawn promotion move was made
             if (pieceType.toLowerCase() == "p") {
+                //get row which pawn is moving into
+                var row = target.charAt(1);
+                //check if the pawn has reached end of the board
                 if ((pieceColour == "w" && row == "8") || (pieceColour == "b" && row == "1")) {
+                    //Add flag to return object p for promotion
                     returnObject.special = "p";
                     //Create new board with same position
                     var specialPosition = new Chess(this.getPosition());
+                    //Place a queen on promotion square
                     specialPosition.put({type: "q", color: pieceColour}, target);
+                    //remove pawn from original square
                     specialPosition.remove(source);
+                    //attach new board position to the return object
                     returnObject.specialPosition = specialPosition.fen();
                 }
             }
             //Check that if the piece captured was on cooldown
             if (this.queryPieceCooldown(target, piece) != false) {
+                //attach a flag to return object if a cooldon was interrupted
                 returnObject.interrupt = true
             } else {
                 returnObject.interrupt = false
             }
 
+            //return the result of all of the processing
             return returnObject;
 
         } else {
+            //The move is illegal
             return {legal: false};
         }      
     }
@@ -229,7 +249,12 @@ class RealTimeChess {
 
             //Perform checks before evaluating move
 
-            //Firtly check if the piece is on cooldown
+            //Firstly, check if the game is still in play
+            if (this.gameOver == true) {
+                return {legal: false};
+            }
+
+            //Check if the piece is on cooldown
             if (this.queryPieceCooldown(source) != false) {
                 return {legal: false};
             }
@@ -254,13 +279,43 @@ class RealTimeChess {
             }
             
             //check if piece is king 
+            var result;
             if (pieceType == "K") {
-                return this.evalKingMove(source, piece, pieceColour, pieceType, target);
-                
+                //Piece is king so evaluate the king move
+                result =  this.evalKingMove(source, piece, pieceColour, pieceType, target);  
             } else {
-                return this.evalNormalMove(source, piece, pieceColour, pieceType, target);
+                //piece is not a king
+                result =  this.evalNormalMove(source, piece, pieceColour, pieceType, target);
             }
+
+            //Check if move was legal
+            if (result.legal == true) {
+                //Check if the target was on cooldown
+                if (targetPiece != false) {
+                    //check if the target is king
+                    if (targetPiece.charAt(1) == "K" ) {
+                        //king captured
+                        this.gameOver = true;
+                        //add flag to return object
+                        result.gameOver = pieceColour;
+                    }
+                //Otherwise check there is a piece that is not on cooldown
+                } else if (this.chess.get(target)) {
+                    //check if target is king
+                    if (this.chess.get(target).type == "k"){
+                        //king captured
+                        this.gameOver = true;
+                        //add flag to return object
+                        result.gameOver = pieceColour;
+                    }
+                }
+            }
+
+            //return result of the evaluation
+            return result;
+
         } catch(error) {
+            //An unforseen error as occured, log the error and carry on
             console.log("An error occured whilst evaluating the move: ");
             console.log(error);
             return {legal: false};

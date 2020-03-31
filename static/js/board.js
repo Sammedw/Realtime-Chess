@@ -32,6 +32,9 @@ var board = Chessboard("board", config);
 //Create list that keeps track of squares with interrupted cooldowns
 var interruptedCooldowns = [];
 
+//set when gameOver message recieved from serer
+var winner = null;
+
 //Displays cooldown animation on given square
 function displayCooldown(square, cooldown) {
     //Locate the sqaure using regex like statememt
@@ -97,10 +100,26 @@ socket.on("startMoveResponse", function(data){
     setTimeout(function(sqaure) { onMoveEnd(sqaure)}, moveSpeed, data.target);
 });
 
+//listen for game over message
+socket.on("gameOver", function(recvWinner) {
+    winner = recvWinner;
+});
+
+
 //Called when piece arrives at square
 function onMoveEnd(square) {
     //display cooldown animation
     displayCooldown(square, cooldown);
+    //Check if there is a winner
+    if (winner != null) {
+        if (config.orientation.charAt(0) == winner) {
+            //you won
+            window.alert("Well done, you won!");
+        } else {
+            //you lost
+            window.alert("You Lost!");
+        }
+    }
 }
 
 //Listen for cooldown interruptions

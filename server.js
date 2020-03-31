@@ -110,8 +110,6 @@ listener.on("connection", function(socket) {
         //if gameID is false then no game was created
         if (gameID) {
             console.log("Game created", gameID);
-            //Get players from game object
-            var players = (gameManager.getGamePlayers(gameID));
             //Emit an event to users to let them know they can redirect to the game page
             gameManager.emitEventToPlayer(gameID, "white", listener, "gameCreated", {side: "white", gameID: gameID});
             gameManager.emitEventToPlayer(gameID, "black", listener, "gameCreated", {side: "black", gameID: gameID});
@@ -127,14 +125,15 @@ listener.on("connection", function(socket) {
         if (gameManager.doesGameExist(data.gameID)) {
             var game = gameManager.getGames()[data.gameID].game;
             //Check if the move made is legal
-            //If the move is legal, a list is returned with the 2nd element being whether an enemy cooldown was interrupted
             var result = game.evalMove(data.source, data.piece, data.target);
             if (result.legal == true) {
-                //If legal send the move to both players
+                //check if a special move was made (pawn promotion)
                 if (result.special){
+                    //append extra flags to return object
                     data.special = true;
                     data.specialPosition = result.specialPosition;
                 }
+                //If legal send the move to both players
                 gameManager.emitEventToPlayers(data.gameID, listener, "startMoveResponse", data);
                 //Put piece on cooldown
                 game.addPieceCooldown(data.target, data.piece);
@@ -144,7 +143,7 @@ listener.on("connection", function(socket) {
                     gameManager.emitEventToPlayers(data.gameID, listener, "cooldownInterruption", data.target);
                 }
                 //Remove piece from board as its in flight
-                game.removePiece(data.source, data.piece)
+                game.removePiece(data.source, data.piece);
                 //Get cooldown and movespeed
                 var cooldown = gameManager.getGameCooldownTime(data.gameID);
                 var moveSpeed = gameManager.getGameMoveSpeed(data.gameID);
@@ -154,6 +153,13 @@ listener.on("connection", function(socket) {
                 //set timer after cooldown has finished (cooldowntime + movetime)
                 setTimeout(function(target, piece, gameID) {endCooldown(target, piece, gameID)}, moveSpeed+cooldown,
                     data.target, data.piece, data.gameID);
+
+                //Check if the game is over
+                if (result.gameOver) {
+                    //emit message to players
+                    console.log("game over");
+                    gameManager.emitEventToPlayers(data.gameID, listener, "gameOver", result.gameOver);
+                }
             }
         } else {
             console.log("Move requested on non-existent game");
@@ -165,17 +171,19 @@ listener.on("connection", function(socket) {
         var game = gameManager.getGames()[gameID].game;
         //check for pawn promotion
         if (specialPosition) {
+            //load new position
             game.chess.load(specialPosition);
         } else {
+            //otherwise make move normally
             game.addPiece(target, piece);
         }
     }
 
     function endCooldown(target, piece, gameID) {
-    //get the game
-    var game = gameManager.getGames()[gameID].game;
-    //remove the cooldown
-    game.removePieceCooldown(target, piece);
+        //get the game
+        var game = gameManager.getGames()[gameID].game;
+        //remove the cooldown
+        game.removePieceCooldown(target, piece);
     }
 
 });
