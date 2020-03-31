@@ -61,7 +61,7 @@ class RealTimeChess {
     }
 
     //Called internally to evaluate king moves
-    evalKingMove(source, piece, target) {
+    evalKingMove(source, piece, pieceColour, pieceType, target) {
         //Check its a valid king move
         //Create a blank board to test that the king is only moving one square
         var blankBoard = new Chess();
@@ -102,11 +102,8 @@ class RealTimeChess {
     }
 
     //Called internally to evaluate normal moves
-    evalNormalMove(source, piece, target) {
+    evalNormalMove(source, piece, pieceColour, pieceType, target) {
         //Piece is not king
-        //get piece type and colour that was moved
-        var pieceColour = piece.charAt(0);
-        var pieceType = piece.charAt(1);
         //Get current chess position
         var currentChessPos = this.chess.fen();
         //Change the turn to player making move
@@ -258,10 +255,10 @@ class RealTimeChess {
             
             //check if piece is king 
             if (pieceType == "K") {
-                return this.evalKingMove(source, piece, target);
+                return this.evalKingMove(source, piece, pieceColour, pieceType, target);
                 
             } else {
-                return this.evalNormalMove(source, piece, target);
+                return this.evalNormalMove(source, piece, pieceColour, pieceType, target);
             }
         } catch(error) {
             console.log("An error occured whilst evaluating the move: ");
