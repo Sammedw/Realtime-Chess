@@ -187,7 +187,7 @@ class RealTimeChess {
                 var row = target.charAt(1);
                 if (pieceType.toLowerCase() == "p") {
                     if ((pieceColour == "w" && row == "8") || (pieceColour == "b" && row == "1")) {
-                        returnObject.special = true;
+                        returnObject.special = "p";
                         //Create new board with same position
                         var specialPosition = new Chess(this.getPosition());
                         specialPosition.put({type: "q", color: pieceColour}, target);

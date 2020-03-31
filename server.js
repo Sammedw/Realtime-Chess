@@ -32,13 +32,15 @@ const listener = socket(server);
 
 //GET request middlware - create session if user has no session
 function establishSession (req, res, next) {
+    //Check if request is GET
     if (req.method == "GET") {
+        //Check if the user has a session cookie
         if (req.cookies["sessionID"] == null) {
+            //If not, generate a new session cookie with random bytes
             var sessionID = crypto.randomBytes(20).toString('hex');
-            console.log("New session: " + sessionID)
+            console.log("New session started: " + sessionID)
+            //Send the user the cookie with a maximum age
             res.cookie('sessionID', sessionID, {maxAge: 10 * 60 * 60 * 1000});
-        } else {
-            console.log("Existing connection");
         }
     }
     next();
@@ -129,7 +131,7 @@ listener.on("connection", function(socket) {
             var result = game.evalMove(data.source, data.piece, data.target);
             if (result.legal == true) {
                 //If legal send the move to both players
-                if (result.special == true){
+                if (result.special){
                     data.special = true;
                     data.specialPosition = result.specialPosition;
                 }
