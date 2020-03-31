@@ -15,7 +15,7 @@ function extractGameInfoFromURL() {
     return {side: side, gameID: gameID};
 }
 
-//Create new board object
+//Board configuration
 var config = {
     draggable: true,
     moveSpeed: moveSpeed,
