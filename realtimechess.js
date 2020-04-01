@@ -45,7 +45,7 @@ class RealTimeChess {
         //check the cooldown exists
         var cooldownPiece = this.queryPieceCooldown(square);
         //Checks that a new piece hasn't taken the sqaure before removing cooldown
-        if (this.queryPieceCooldown(square) == piece) {
+        if (cooldownPiece == piece) {
             //remove the cooldown
             delete this.cooldownList[square]
         }
