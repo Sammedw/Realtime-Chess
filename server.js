@@ -59,10 +59,8 @@ app.get("/game/:gameID/:side/:sessionID", function (req, res) {
     var urlGameID = req.params["gameID"];
     //Get side from url
     var urlSide = req.params["side"];
-    //get socketID from url
+    //get sessionID from url
     var urlSessionID = req.params["sessionID"];
-    console.log(urlGameID);
-    console.log(urlSessionID);
     //Check that the game currently exists
     if (gameManager.doesGameExist(urlGameID.toString())) {
         //If it exists, check that the user is a valid member of the game 
@@ -70,7 +68,6 @@ app.get("/game/:gameID/:side/:sessionID", function (req, res) {
         //Get players
         var players = gameManager.getGamePlayers(urlGameID);
         //Check if they are players in the game
-        console.log(players[urlSide]);
         if (players[urlSide] == urlSessionID) {
             //Get cooldown and movespeed to send to client
             var cooldown = gameManager.getGameCooldownTime(urlGameID);

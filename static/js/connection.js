@@ -15,3 +15,4 @@ socket.on("connect", function() {
 
 //export socket to other js files:
 export { socket , sessionID};
+
