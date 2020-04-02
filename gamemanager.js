@@ -85,18 +85,19 @@ class GameManager {
         return this.games[gameID].moveTime;
     }
 
-    //Emits a socketIO messeage to specific player in game given piece colour
+    //Emits a socketIO message to specific player in game given piece colour
     emitEventToPlayer(gameID, side, socket, event, data) {
         //Get player from game object
-        console.log(this.getGamePlayers(gameID)[side]);
-        socket.to(connectedUsers[this.getGamePlayers(gameID)[side]]).emit(event, data);
+        var player = this.getGamePlayers(gameID)[side];
+        //Send event to user by getting their socketID from connectedUsers
+        socket.to(connectedUsers[player]).emit(event, data);
     }
 
     //Emits a socketIO message to players of a given game
     emitEventToPlayers(gameID, socket, event, data) {
         //Loop through players in a given game
         Object.values(this.getGamePlayers(gameID)).forEach(function(player) {
-            console.log("Event sent to " + player + " at " + connectedUsers[player]);
+            //Send message to player
             socket.to(connectedUsers[player]).emit(event, data);
         });
     }
