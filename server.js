@@ -118,8 +118,9 @@ listener.on("connection", function(socket) {
 
     //listen for clients trying to make moves
     socket.on("startMove", function(data) {
-        //Get game by gameID
+        //Check the game exists
         if (gameManager.doesGameExist(data.gameID)) {
+            //Get the real time chess object by gameID
             var game = gameManager.getGames()[data.gameID].game;
             //Check if the move made is legal
             var result = game.evalMove(data.source, data.piece, data.target);
@@ -160,6 +161,7 @@ listener.on("connection", function(socket) {
             }
         } else {
             console.log("Move requested on non-existent game");
+            console.log(this.getGames());
         }
     });
 

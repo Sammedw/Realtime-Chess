@@ -80,7 +80,8 @@ function onDragStart(source, piece, pos, orientation) {
 //Called when user drops a piece on a square
 function onDrop(source, target, piece, newPos, oldPos, orientation) {
     //emit message to server with the move details for evaluation
-    socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, source: source, target: target, piece: piece, side: orientation});
+    socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, 
+                            source: source, target: target, piece: piece, side: orientation});
     return "snapback";
 }
 
@@ -100,12 +101,6 @@ socket.on("startMoveResponse", function(data){
     setTimeout(function(sqaure) { onMoveEnd(sqaure)}, moveSpeed, data.target);
 });
 
-//listen for game over message
-socket.on("gameOver", function(recvWinner) {
-    winner = recvWinner;
-});
-
-
 //Called when piece arrives at square
 function onMoveEnd(square) {
     //display cooldown animation
@@ -122,10 +117,17 @@ function onMoveEnd(square) {
     }
 }
 
+//listen for game over message
+socket.on("gameOver", function(recvWinner) {
+    winner = recvWinner;
+});
+
+
 //Listen for cooldown interruptions
 socket.on("cooldownInterruption", function(square) {
     //Cancel existing cooldown animation
     removeCooldown(square);
     //Add square to interrupted cooldowns list so the second animation is not cancelled early
     interruptedCooldowns.push(square);
+    console.log(interruptedCooldowns);
 });
