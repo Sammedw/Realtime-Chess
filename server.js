@@ -161,7 +161,7 @@ listener.on("connection", function(socket) {
             }
         } else {
             console.log("Move requested on non-existent game");
-            console.log(this.getGames());
+            console.log(JSON.stringify(gameManager.getGames()));
         }
     });
 
