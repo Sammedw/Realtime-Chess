@@ -82,7 +82,7 @@ function onDrop(source, target, piece, newPos, oldPos, orientation) {
     //emit message to server with the move details for evaluation
     socket.emit("startMove", {gameID: extractGameInfoFromURL().gameID, 
                             source: source, target: target, piece: piece, side: orientation});
-    return "snapback";
+    return "trash";
 }
 
 
